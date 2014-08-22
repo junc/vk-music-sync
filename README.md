@@ -6,7 +6,7 @@ Synchronize music from your VK profile.
 If you have added some music on your VK profile, vk-music-sync will download missing files. If you delete some music, program delete those files in your local folder.
 vk-music-sync writes metadata `artist` and `title` to mp3 files.
 
-For use vk-music-sync you need to get **token** from VK.
+For use vk-music-sync you need to [get **token**](#how-to-get-token) from VK.
 
 If you have any trouble or if you have found any mistake contact me. `Thank you`
 
@@ -21,7 +21,7 @@ If you have any trouble or if you have found any mistake contact me. `Thank you`
     $ cd vk-music-sync
     $ make
 
-## How to get *token*
+## How to get token
 For get token, you have to go **[to vk](https://oauth.vk.com/authorize?client_id=4509223&scope=audio&redirect_uri=http:%2F%2Foauth.vk.com%2Fblank.html&display=wap&response_type=token)**, confirm the action and copy 'access_token' from URL.
 
 ### First run

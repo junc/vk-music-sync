@@ -28,7 +28,7 @@ std::string homedir = pw->pw_dir;
 // Dir
 struct stat sb;
 
-const char* VERSION = "0.0.1";
+const char* VERSION = "0.0.2";
 
 #ifdef _WIN32
     const char DS = '\\';
@@ -51,10 +51,12 @@ int main(int argc, char **argv)
     bool error = false;
     bool save  = false;
     bool saveMeta  = true;
+    bool isRemove  = true;
     
     size_t currentBatch = 0;
     std::string request;
     
+    std::stringstream log;
     std::string filename;
     std::string filepath;
     std::vector<std::string> cloudFiles;
@@ -120,6 +122,9 @@ int main(int argc, char **argv)
         else if (arg == "-h" || arg == "--help") {
             help();
             exit(0);
+        }
+        else if (arg == "-nd" || arg == "--no-delete") {
+            isRemove = false;
         }
         else if (arg == "--no-save-meta") {
             saveMeta = false;
@@ -226,6 +231,30 @@ int main(int argc, char **argv)
     int attempts = 0;
     localFiles = GetFilesInDirectory(config.get("Settings", "dist").toCharPointer());
     
+    // Check the same titles
+    for (size_t i = 0; i < vk.musicList.size(); i++) {
+        filename = vk.musicList[i].artist + " - " + vk.musicList[i].title;
+        bool found = false;
+        
+        for (size_t y = i+1; y < vk.musicList.size(); y++) {
+            if (vk.musicList[i].artist == vk.musicList[y].artist
+                && vk.musicList[i].title == vk.musicList[y].title
+            ) {
+                // Rename
+                found = true;
+                vk.musicList[y].title += " (id";
+                vk.musicList[y].title += vk.musicList[y].id;
+                vk.musicList[y].title += ")";
+            }
+        }
+        
+        if (found) {
+            vk.musicList[i].title += " (id";
+            vk.musicList[i].title += vk.musicList[i].id;
+            vk.musicList[i].title += ")";
+        }
+    }
+    
     // Downloading...
     printf("Directory: %s\n", (config.get("Settings", "dist").toString() + DS).c_str());
     for (size_t i = 0; i < vk.musicList.size(); i++) {
@@ -235,7 +264,7 @@ int main(int argc, char **argv)
         cloudFiles.push_back(filepath);
         
         if (std::find(localFiles.begin(), localFiles.end(), filepath) != localFiles.end()) {
-            printf("Skip file '%s'\n", filename.c_str());
+            //  printf("Skip file '%s'\n", filename.c_str());
             continue;
         }
         
@@ -253,6 +282,8 @@ int main(int argc, char **argv)
             // Save metadata
             if (saveMeta) {
                 TagLib::MPEG::File file(filepath.c_str());
+                
+                log << "\nDownloaded: " << filename.c_str();
                 
                 if (file.isValid() && file.ID3v2Tag()) {
                     file.ID3v2Tag()->setArtist(TagLib::String(vk.musicList[i].artist.c_str(), TagLib::String::UTF8));
@@ -276,13 +307,19 @@ int main(int argc, char **argv)
         }
     }
     
+    if (log) {
+        std::cout << log.str() << '\n';
+    }
+    
     // Remove other files
-    for (size_t i = 0; i < localFiles.size(); i++) {
-        if (std::find(cloudFiles.begin(), cloudFiles.end(), localFiles[i]) == cloudFiles.end()) {
-            if (remove(localFiles[i].c_str()) != 0) {
-                fprintf(stderr, "Error deleting file: %s\n", localFiles[i].c_str());
-            } else {
-                fprintf(stderr, "Removed: %s\n", localFiles[i].c_str());
+    if (isRemove) {
+        for (size_t i = 0; i < localFiles.size(); i++) {
+            if (std::find(cloudFiles.begin(), cloudFiles.end(), localFiles[i]) == cloudFiles.end()) {
+                if (remove(localFiles[i].c_str()) != 0) {
+                    fprintf(stderr, "Error deleting file: %s\n", localFiles[i].c_str());
+                } else {
+                    fprintf(stderr, "Removed: %s\n", localFiles[i].c_str());
+                }
             }
         }
     }
@@ -304,6 +341,7 @@ void help()
     printf("  -ui, --user-id <ID>    User ID.\n");
     printf("  -d,  --dir <DIR>       Output dir.\n");
     printf("  -s,  --save            Save user ID and other to config file.\n");
+    printf("  -nd, --no-delete       No delete files in <DIR>.\n");
     printf("  --reset                Reset config file (excluding token).\n");
     printf("  --no-save-meta         Metadata will not save.\n");
     printf("Examples:\n");
