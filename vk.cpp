@@ -3,7 +3,7 @@
 std::string vk_curl_data_pub = "";
 
 bool VK::VERBOSE = false;
-ushort VK::WIDTH_PROGRESS_BAR = 50;
+unsigned short VK::WIDTH_PROGRESS_BAR = 50;
 
 size_t VK::writeCallback(char* buf, size_t size, size_t nmemb, void* /* userp */)
 {
@@ -38,7 +38,7 @@ int VK::progress_func(void* /* ptr */, double totalToDownload, double nowDownloa
         putchar('-');
     }
     
-    printf("] %3d%%", static_cast<int>(fract * 100));
+	printf("] %lu%%", static_cast<size_t>(fract * 100));
     
     putchar('\r');
     fflush(stdout);
@@ -110,8 +110,9 @@ bool VK::request(const char* method, const char* params, long timeout)
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_VERBOSE, 0))
-            && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_URL, _url.c_str()))
-            && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT))
+			&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_URL, _url.c_str()))
+			&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT))
+			&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_COOKIEFILE, ""))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_COOKIELIST, "ALL"))
         ) {
@@ -142,7 +143,14 @@ bool VK::download(const char *url, const char *output)
     long http_code = 0;
     
     if (curl) {
-        fp = fopen(output, "wb");
+		
+#ifdef _WIN32
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
+		std::wstring newStr = convert.from_bytes(output);
+		fp = _wfopen(newStr.c_str(), L"wb");
+#else
+		fp = fopen(output, "wb");
+#endif
         
         if (   CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &VK::downloadCallback))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0))
@@ -153,7 +161,8 @@ bool VK::download(const char *url, const char *output)
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_URL, url))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L))
-            && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT))
+			&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT))
+			&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_COOKIEFILE, ""))
             && CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_COOKIELIST, "ALL"))
         ) {

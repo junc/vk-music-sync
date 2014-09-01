@@ -8,7 +8,7 @@ OBJECTS    = $(SOURCES:.cpp=.o)
 all: $(SOURCES) $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(LIBS) $(OBJECTS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET) $(LIBS)
 
 %.o: %.cpp
 	$(CC) -c $(CFLAGS) $< -o $@

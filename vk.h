@@ -6,9 +6,16 @@
 #include <sstream>
 #include <vector>
 #include <jansson.h>
-#include <curl/curl.h>
 
+#include <curl/curl.h>
 #include "depends/variant.h"
+
+#ifdef _WIN32
+#pragma warning (disable : 4996)
+
+#include <codecvt>
+#include <wchar.h>
+#endif
 
 class VK
 {
@@ -32,7 +39,7 @@ class VK
     
 public:
     static bool VERBOSE;
-    static ushort WIDTH_PROGRESS_BAR;
+    static unsigned short WIDTH_PROGRESS_BAR;
     
     struct Music
     {
