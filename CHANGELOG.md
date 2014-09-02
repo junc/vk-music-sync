@@ -1,6 +1,12 @@
 
 If you have any comments and suggestions please let me know.
 
+### Version 0.0.4
+Release date: 2 September 2014
++ Fix creation directory problem with double slashes. Thanks [mekkanizer](https://github.com/mekkanizer)
++ Recursive directory creation.
++ Added `-v` or `--version` option.
+
 ### Version 0.0.3
 Release date: 1 September 2014
 + Crossplatform (Windows binaries)

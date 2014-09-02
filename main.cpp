@@ -40,11 +40,7 @@
 // Dir
 struct stat sb;
 
-const char* VERSION = "0.0.2";
-
-#ifndef S_ISDIR
-#define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
-#endif
+const char* VERSION = "0.0.4";
 
 int makeDir(const char* dirname);
 bool dirExists(const char* dirname);
@@ -79,10 +75,12 @@ int main(int argc, char **argv)
 
     size_t currentBatch = 0;
     std::string request;
-
+    
     std::stringstream log;
     std::string filename;
     std::string filepath;
+    std::string dist;
+    
     std::vector<std::string> cloudFiles;
     std::vector<std::string> localFiles;
 
@@ -160,6 +158,10 @@ int main(int argc, char **argv)
         else if (arg == "--debug") {
             VK::VERBOSE = true;
         }
+        else if (arg == "-v" || arg == "--version") {
+            printf("%s\n", VERSION);
+            exit(0);
+        }
         else if (arg == "-s" || arg == "--save") {
             save = true;
         } else {
@@ -211,7 +213,14 @@ int main(int argc, char **argv)
 
     config.set("Settings", "user_id", vk.user_id);
     printf("User: %s %s (id%s)\n", vk.first_name.c_str(), vk.last_name.c_str(), vk.user_id.c_str());
-
+    
+    dist = config.get("Settings", "dist").toString();
+    dist = Variant::replace(dist, std::string(2, DS), std::string(1, DS));
+    while (dist.back() == DS) {
+        dist.erase(dist.length()-1);
+    }
+    config.set("Settings", "dist", dist);
+    
     if (save) {
         config.save();
     }
@@ -242,14 +251,14 @@ int main(int argc, char **argv)
 
         currentBatch++;
     }
-
+    
     if (config.get("Settings", "dist").isEmpty()) {
-        // config.set("Settings", "dist", homedir + DS + "Music");
         config.set("Settings", "dist", std::string("."));
     }
-
+    
     config.set("Settings", "dist", config.get("Settings", "dist").toString() + DS + vk.first_name + " " + vk.last_name);
-
+    
+    std::cout << (config.get("Settings", "dist").toString() + DS).c_str() << '\n';
     // Create music directory
 	if (!dirExists((config.get("Settings", "dist").toString() + DS).c_str())) {
         printf("Creating directory: %s\n", (config.get("Settings", "dist").toString() + DS).c_str());
@@ -381,6 +390,7 @@ void help()
     printf("VK Music Sync.\n");
     printf("Description:\n");
     printf("  Synchronize your VK playlist with your local storage. Program needs 'token' for requests to VK.\n");
+    printf("\nOptions:\n");
     printf("  -t,  --token <TOKEN>   Access token. It needs for get music from your profile.\n");
     printf("  -u,  --user <USER>     User ID or user name like vk.com/durov.\n");
     printf("  -ui, --user-id <ID>    User ID.\n");
@@ -389,14 +399,16 @@ void help()
     printf("  -nd, --no-delete       Don't delete files in <DIR>.\n");
     printf("  --reset                Reset config file (excluding token).\n");
     printf("  --no-save-meta         Metadata will not save.\n");
-    printf("Examples:\n");
+    printf("  -v,  --version         Show version and exit.\n");
+    printf("\nExamples:\n");
     printf("  %s\n", programName);
     printf("  %s --token <TOKEN>\n", programName);
     printf("  %s --user durov\n", programName);
     printf("  %s --user-id 1 --save\n", programName);
     printf("  %s --dir ~/Music\n", programName);
-    printf("For get token, you can go to vk: %s and copy 'token' from URL.\n",
+    printf("\nFor get token, you can go to vk: %s and copy 'token' from URL.\n",
            "https://oauth.vk.com/authorize?client_id=4509223&scope=audio&redirect_uri=http:%2F%2Foauth.vk.com%2Fblank.html&display=wap&response_type=token");
+    printf("\nVersion: %s\n", VERSION);
     printf("Source code: https://github.com/junc/vk-music-sync\n");
     printf("Enjoy.\n");
 }
@@ -426,7 +438,11 @@ int makeDir(const char* dirname)
 		result = 0;
 	}
 #else
-    result = mkdir(dirname, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    char cmd[255] = {0};
+    sprintf(cmd, "mkdir -p %s", Variant::replace(dirname, " ", "\\ ", 0, false).c_str());
+    result = system(cmd);
+    
+    // result = mkdir(dirname, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
     return result;
 }
