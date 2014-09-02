@@ -258,7 +258,6 @@ int main(int argc, char **argv)
     
     config.set("Settings", "dist", config.get("Settings", "dist").toString() + DS + vk.first_name + " " + vk.last_name);
     
-    std::cout << (config.get("Settings", "dist").toString() + DS).c_str() << '\n';
     // Create music directory
 	if (!dirExists((config.get("Settings", "dist").toString() + DS).c_str())) {
         printf("Creating directory: %s\n", (config.get("Settings", "dist").toString() + DS).c_str());
@@ -311,8 +310,9 @@ int main(int argc, char **argv)
         }
 
         if (!attempts) {
-            printf("\nSleep 3 seconds...\n");
-            sleep(3);
+            std::cout << std::endl;
+            // printf("Sleep 1 second...\n");
+            sleep(1);
         }
 
 #ifdef _WIN32
@@ -355,7 +355,7 @@ int main(int argc, char **argv)
         }
     }
 
-    if (log) {
+    if (log.str().length()) {
 #ifdef _WIN32
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
 		std::wstring log_w = convert.from_bytes(log.str().c_str());
@@ -363,6 +363,8 @@ int main(int argc, char **argv)
 #else
 		std::cout << log.str() << '\n';
 #endif
+    } else {
+        std::cout << "Nothing to do.\n";
     }
 
     // Remove other files
