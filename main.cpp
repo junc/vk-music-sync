@@ -29,12 +29,12 @@
 
 #ifdef _WIN32
     std::string homedir;
-	const char DS = '\\';
+    const char DS = '\\';
 #else
-	// User's directory.
+    // User's directory.
     struct passwd *pw = getpwuid(getuid());
     std::string homedir = pw->pw_dir;
-	const char DS = '/';
+    const char DS = '/';
 #endif
 
 // Dir
@@ -56,11 +56,11 @@ void sleep(size_t sec) { Sleep(sec * 1000); }
 int main(int argc, char **argv)
 {
 #ifdef _WIN32
-	setlocale(LC_ALL, "Russian");
-	char homedir_path[MAX_PATH];
-	if (SHGetFolderPathA(NULL, CSIDL_PROFILE, NULL, 0, homedir_path) == S_OK) {
-		homedir = homedir_path;
-	}
+    setlocale(LC_ALL, "Russian");
+    char homedir_path[MAX_PATH];
+    if (SHGetFolderPathA(NULL, CSIDL_PROFILE, NULL, 0, homedir_path) == S_OK) {
+        homedir = homedir_path;
+    }
 #endif
 
     std::string programDir;
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 #endif
 
     // Create program's dir if not exist.
-	if (!dirExists(programDir.c_str())) {
+    if (!dirExists(programDir.c_str())) {
         printf("Creating directory: %s\n", programDir.c_str());
         int status = makeDir(programDir.c_str());
 
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
         else if (arg == "--reset") {
             std::string token = config.get("Settings", "token", "").toString();
             config.reset();
-            config.get("Settings", "token", token);
+            config.set("Settings", "token", token);
             config.save();
             printf("Settings are cleared due.\n");
             exit(0);
@@ -173,15 +173,15 @@ int main(int argc, char **argv)
         }
     }
 
-	if (VK::VERBOSE) {
-		curl_version_info_data* vinfo = curl_version_info(CURLVERSION_NOW);
+    if (VK::VERBOSE) {
+        curl_version_info_data* vinfo = curl_version_info(CURLVERSION_NOW);
 
-		if (vinfo->features & CURL_VERSION_SSL){
-			std::cout << "CURL: SSL enabled\n";
-		} else {
-			std::cout << "CURL: SSL not enabled\n";
-		}
-	}
+        if (vinfo->features & CURL_VERSION_SSL){
+            std::cout << "CURL: SSL enabled\n";
+        } else {
+            std::cout << "CURL: SSL not enabled\n";
+        }
+    }
 
     vk.setToken(config.get("Settings", "token").toCharPointer());
 
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
     config.set("Settings", "dist", config.get("Settings", "dist").toString() + DS + vk.first_name + " " + vk.last_name);
     
     // Create music directory
-	if (!dirExists((config.get("Settings", "dist").toString() + DS).c_str())) {
+    if (!dirExists((config.get("Settings", "dist").toString() + DS).c_str())) {
         printf("Creating directory: %s\n", (config.get("Settings", "dist").toString() + DS).c_str());
         int status = makeDir((config.get("Settings", "dist").toString() + DS).c_str());
 
@@ -319,14 +319,14 @@ int main(int argc, char **argv)
         }
 
 #ifdef _WIN32
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
-		std::wstring filename_w = convert.from_bytes(filename.c_str());
-		std::wcout << L"Downloading '" << filename_w << L"'\n";
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
+        std::wstring filename_w = convert.from_bytes(filename.c_str());
+        std::wcout << L"Downloading '" << filename_w << L"'\n";
 #else
-		printf("Downloading '%s'\n", filename.c_str());
+        printf("Downloading '%s'\n", filename.c_str());
 #endif
         
-		error = vk.download(vk.musicList[i].url.c_str(), filepath.c_str());
+        error = vk.download(vk.musicList[i].url.c_str(), filepath.c_str());
         if (!error) {
             attempts = 0;
 
@@ -337,8 +337,8 @@ int main(int argc, char **argv)
                 log << "\nDownloaded: " << filename.c_str();
 
                 if (file.isValid() && file.ID3v2Tag()) {
-					file.ID3v2Tag()->setArtist(TagLib::String(vk.musicList[i].artist.c_str(), TagLib::String::UTF8));
-					file.ID3v2Tag()->setTitle(TagLib::String(vk.musicList[i].title.c_str(), TagLib::String::UTF8));
+                    file.ID3v2Tag()->setArtist(TagLib::String(vk.musicList[i].artist.c_str(), TagLib::String::UTF8));
+                    file.ID3v2Tag()->setTitle(TagLib::String(vk.musicList[i].title.c_str(), TagLib::String::UTF8));
                     file.save();
                 }
             }
@@ -360,11 +360,11 @@ int main(int argc, char **argv)
 
     if (log.str().length()) {
 #ifdef _WIN32
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
-		std::wstring log_w = convert.from_bytes(log.str().c_str());
-		std::wcout << log_w << '\n';
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
+        std::wstring log_w = convert.from_bytes(log.str().c_str());
+        std::wcout << log_w << '\n';
 #else
-		std::cout << log.str() << '\n';
+        std::cout << log.str() << '\n';
 #endif
     } else {
         std::cout << "Nothing to do.\n";
@@ -420,28 +420,28 @@ void help()
 
 bool dirExists(const char* dirname)
 {
-	bool exists = false;
+    bool exists = false;
 #ifdef _WIN32
-	DWORD ftyp = GetFileAttributesA(dirname);
-	if (ftyp != INVALID_FILE_ATTRIBUTES && ftyp & FILE_ATTRIBUTE_DIRECTORY) {
-		exists = true;
-	}
+    DWORD ftyp = GetFileAttributesA(dirname);
+    if (ftyp != INVALID_FILE_ATTRIBUTES && ftyp & FILE_ATTRIBUTE_DIRECTORY) {
+        exists = true;
+    }
 #else
-	if (stat(dirname, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-		exists = true;
-	}
+    if (stat(dirname, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+        exists = true;
+    }
 #endif
-	return exists;
+    return exists;
 }
 
 int makeDir(const char* dirname)
 {
     int result = 1;
 #ifdef _WIN32
-	result = system((std::string("md \"") + Variant::replace(dirname, "\"", "\\\"") + '"').c_str());
-	if (result == 1) {
-		result = 0;
-	}
+    result = system((std::string("md \"") + Variant::replace(dirname, "\"", "\\\"") + '"').c_str());
+    if (result == 1) {
+        result = 0;
+    }
 #else
     char cmd[255] = {0};
     sprintf(cmd, "mkdir -p %s", Variant::replace(dirname, " ", "\\ ", 0, false).c_str());
@@ -528,13 +528,13 @@ std::vector<std::string> GetFilesInDirectory(const std::string &directory)
     HANDLE dir;
     WIN32_FIND_DATA file_data;
 
-	std::string strdir = directory + "/*";
+    std::string strdir = directory + "/*";
     wchar_t filename[4096] = {0};
-	const char* dirname = strdir.c_str();
+    const char* dirname = strdir.c_str();
     MultiByteToWideChar(0, 0, dirname, strlen(dirname), filename, strlen(dirname));
 
     if ((dir = FindFirstFile(filename, &file_data)) == INVALID_HANDLE_VALUE)
-		return out;
+        return out;
 
     do {
         std::string file_name = utf8_encode(file_data.cFileName);
