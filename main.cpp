@@ -151,7 +151,10 @@ int main(int argc, char **argv)
             saveMeta = false;
         }
         else if (arg == "--reset") {
+            std::string token = config.get("Settings", "token", "").toString();
             config.reset();
+            config.get("Settings", "token", token);
+            config.save();
             printf("Settings are cleared due.\n");
             exit(0);
         }
