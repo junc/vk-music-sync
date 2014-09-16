@@ -1,6 +1,10 @@
 
 If you have any comments and suggestions please let me know.
 
+### Version 0.0.5
+Release date: 16 September 2014
++ Fix segmentation fault by reason of slashes in a file name. Thanks [mekkanizer](https://github.com/mekkanizer)
+
 ### Version 0.0.4
 Release date: 2 September 2014
 + Fix creation directory problem with double slashes. Thanks [mekkanizer](https://github.com/mekkanizer)

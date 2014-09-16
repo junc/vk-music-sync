@@ -255,6 +255,11 @@ void VK::getUserMusic(const char *json)
         music.id        = Variant(json_integer_value(json_object_get(j_object, "id"))).toString();
         music.duration  = json_integer_value(json_object_get(j_object, "duration"));
         
+        music.artist = Variant::replace(music.artist, "/", " ");
+        music.artist = Variant::replace(music.artist, "\\", " ");
+        
+        music.title = Variant::replace(music.title, "/", " ");
+        music.title = Variant::replace(music.title, "\\", " ");
         
         musicList.push_back(music);
     }
