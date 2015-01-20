@@ -40,7 +40,7 @@
 // Dir
 struct stat sb;
 
-const char* VERSION = "0.0.4";
+const char* VERSION = "0.0.5";
 
 int makeDir(const char* dirname);
 bool dirExists(const char* dirname);
@@ -412,7 +412,7 @@ void help()
     printf("  %s --user-id 1 --save\n", programName);
     printf("  %s --dir ~/Music\n", programName);
     printf("\nFor get token, you can go to vk: %s and copy 'token' from URL.\n",
-           "https://oauth.vk.com/authorize?client_id=4509223&scope=audio&redirect_uri=http:%2F%2Foauth.vk.com%2Fblank.html&display=wap&response_type=token");
+           "https://oauth.vk.com/authorize?client_id=4509223&scope=audio,offline&redirect_uri=http:%2F%2Foauth.vk.com%2Fblank.html&display=wap&response_type=token");
     printf("\nVersion: %s\n", VERSION);
     printf("Source code: https://github.com/junc/vk-music-sync\n");
     printf("Enjoy.\n");
