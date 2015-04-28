@@ -21,6 +21,10 @@ If you have any trouble or if you have found any mistake contact me. `Thank you`
 - jansson
 - taglib
 
+### Install for Debian
+    ~$ sudo apt-get install libjansson-dev
+    ~$ sudo apt-get install libcurl4-openssl-dev
+
 ## Compiling
 ### On Linux
     $ git clone https://github.com/junc/vk-music-sync.git
