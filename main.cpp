@@ -40,7 +40,7 @@
 // Dir
 struct stat sb;
 
-const char* VERSION = "0.0.5";
+const char* VERSION = "0.0.6";
 
 int makeDir(const char* dirname);
 bool dirExists(const char* dirname);
@@ -72,14 +72,20 @@ int main(int argc, char **argv)
     bool save  = false;
     bool saveMeta  = true;
     bool isRemove  = true;
+    bool is_arg_info = false;
 
+    size_t download_count = 0;
+    size_t songs_count = 0;
     size_t currentBatch = 0;
+    int left_pad_number = 0;
     std::string request;
     
     std::stringstream log;
     std::string filename;
     std::string filepath;
     std::string dist;
+    std::string song_artist;
+    std::string song_title;
     
     std::vector<std::string> cloudFiles;
     std::vector<std::string> localFiles;
@@ -140,6 +146,13 @@ int main(int argc, char **argv)
             checkArgument(i, argc, arg.c_str());
             config.set("Settings", "dist", argv[++i]);
         }
+        else if (arg == "-n" || arg == "--count") {
+            checkArgument(i, argc, arg.c_str());
+            download_count = Variant(argv[++i]).toSize_t();
+            if (download_count < 1) {
+                download_count = 0; // unlimited
+            }
+        }
         else if (arg == "-h" || arg == "--help") {
             help();
             exit(0);
@@ -149,6 +162,9 @@ int main(int argc, char **argv)
         }
         else if (arg == "--no-save-meta") {
             saveMeta = false;
+        }
+        else if (arg == "-i" || arg == "--info") {
+            is_arg_info = true;
         }
         else if (arg == "--reset") {
             std::string token = config.get("Settings", "token", "").toString();
@@ -217,6 +233,10 @@ int main(int argc, char **argv)
     config.set("Settings", "user_id", vk.user_id);
     printf("User: %s %s (id%s)\n", vk.first_name.c_str(), vk.last_name.c_str(), vk.user_id.c_str());
     
+    if (is_arg_info) {
+        exit(0);
+    }
+    
     dist = config.get("Settings", "dist").toString();
     dist = Variant::replace(dist, std::string(2, DS), std::string(1, DS));
     while (dist.back() == DS) {
@@ -277,6 +297,9 @@ int main(int argc, char **argv)
 
     // Check the same titles
     for (size_t i = 0; i < vk.musicList.size(); i++) {
+        vk.musicList[i].artist = Variant::trim(vk.musicList[i].artist);
+        vk.musicList[i].title  = Variant::trim(vk.musicList[i].title);
+        
         filename = vk.musicList[i].artist + " - " + vk.musicList[i].title;
         bool found = false;
 
@@ -301,8 +324,31 @@ int main(int argc, char **argv)
 
     // Downloading...
     printf("Directory: %s\n", (config.get("Settings", "dist").toString() + DS).c_str());
-    for (size_t i = 0; i < vk.musicList.size(); i++) {
-        filename = vk.musicList[i].artist + " - " + vk.musicList[i].title + ".mp3";
+    
+    songs_count = vk.musicList.size();
+    if ( download_count && songs_count > download_count ) {
+        songs_count = download_count;
+    }
+    
+    if ( songs_count < 10 ) {
+        left_pad_number = 1;
+    } else if ( songs_count < 100 ) {
+        left_pad_number = 2;
+    } else if ( songs_count < 1000 ) {
+        left_pad_number = 3;
+    } else if ( songs_count < 10000 ) {
+        left_pad_number = 4;
+    }
+    
+    for (size_t i = 0; i < songs_count; i++) {
+        song_artist = Variant::trim(vk.musicList[i].artist);
+        song_title  = Variant::trim(vk.musicList[i].title);
+        
+        if (song_artist.empty()) {
+            song_artist = "Undefined";
+        }
+        
+        filename = song_artist + " - " + song_title + ".mp3";
         filepath = config.get("Settings", "dist").toString() + '/' + filename;
 
         cloudFiles.push_back(filepath);
@@ -321,9 +367,9 @@ int main(int argc, char **argv)
 #ifdef _WIN32
         std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> convert;
         std::wstring filename_w = convert.from_bytes(filename.c_str());
-        std::wcout << L"Downloading '" << filename_w << L"'\n";
+        std::wcout << L"#" << (i + 1) << L" Downloading '" << filename_w << L"'\n";
 #else
-        printf("Downloading '%s'\n", filename.c_str());
+        printf("#%-*zu of %-*zu Downloading '%s'\n", left_pad_number, i + 1, left_pad_number, songs_count, filename.c_str());
 #endif
         
         error = vk.download(vk.musicList[i].url.c_str(), filepath.c_str());
@@ -342,7 +388,6 @@ int main(int argc, char **argv)
                     file.save();
                 }
             }
-
         } else {
             fprintf(stderr, "Error: %s\n\n", vk.getLastError());
             printf("Sleep 7 seconds...\n");
@@ -401,17 +446,19 @@ void help()
     printf("  -ui, --user-id <ID>    User ID.\n");
     printf("  -d,  --dir <DIR>       Output dir.\n");
     printf("  -s,  --save            Save user ID and other to config file.\n");
+    printf("  -n,  --count <NUMBER>  Download first <NUMBER> songs.\n");
     printf("  -nd, --no-delete       Don't delete files in <DIR>.\n");
+    printf("  -i,  --info            Show info about current user and exit.\n");
     printf("  --reset                Reset config file (excluding token).\n");
     printf("  --no-save-meta         Metadata will not save.\n");
     printf("  -v,  --version         Show version and exit.\n");
     printf("\nExamples:\n");
     printf("  %s\n", programName);
-    printf("  %s --token <TOKEN>\n", programName);
-    printf("  %s --user durov\n", programName);
+    printf("  %s -t <TOKEN> -u durov -s\n", programName);
+    printf("  %s --user durov --count 5\n", programName);
     printf("  %s --user-id 1 --save\n", programName);
     printf("  %s --dir ~/Music\n", programName);
-    printf("\nFor get token, you can go to vk: %s and copy 'token' from URL.\n",
+    printf("\nIn order to get token, you can go to vk: %s and copy 'token' from URL.\n",
            "https://oauth.vk.com/authorize?client_id=4509223&scope=audio,offline&redirect_uri=http:%2F%2Foauth.vk.com%2Fblank.html&display=wap&response_type=token");
     printf("\nVersion: %s\n", VERSION);
     printf("Source code: https://github.com/junc/vk-music-sync\n");
