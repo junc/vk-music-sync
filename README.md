@@ -2,6 +2,13 @@
 VK Music Sync
 =============
 
+# WARNING!
+# This application no longer works! Why?
+# Mail.ru bought VK.COM, so now users can't use API to fetch music. VK.COM has disabled this functionality and now offer to use official application to listen to music.
+# Fuck you, VK.COM.
+
+=============
+
 Synchronize music with your VK profile.
 If you have added some music on your VK profile, vk-music-sync will download missing files. If you delete some music, program delete those files in your local folder.
 vk-music-sync writes metadata `artist` and `title` to mp3 files.
