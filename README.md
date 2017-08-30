@@ -5,7 +5,6 @@ VK Music Sync
 # WARNING!
 # This application no longer works! Why?
 # Mail.ru bought VK.COM, so now users can't use API to fetch music. VK.COM has disabled this functionality and now offer to use official application to listen to music.
-# Fuck you, VK.COM.
 
 =============
 
